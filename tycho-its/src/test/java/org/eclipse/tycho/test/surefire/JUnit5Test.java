@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 SAP SE and others.
+ * Copyright (c) 2018, 2023 SAP SE and others.
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -97,6 +97,17 @@ public class JUnit5Test extends AbstractTychoIntegrationTest {
 		assertTestMethodWasSuccessfullyExecuted(projectBasedir, "bundle.test.JUnit59Test",
 				"parameterizedJUnit59TestWithMethodSource(int, int, int)[3] 12, 30, 42");
 		// make sure test tagged as 'slow' was skipped
+		assertNumberOfSuccessfulTests(projectBasedir, "bundle.test.JUnit59Test", 4);
+	}
+
+	@Test
+	public void testJUnit59SuiteRunner() throws Exception {
+		Verifier verifier = getVerifier("/surefire.junit59/suite.test", false);
+		verifier.addCliOption("-Drepo-2020-03=" + P2Repositories.ECLIPSE_LATEST.toString());
+		verifier.executeGoal("verify");
+		// Error if no tests were executed
+		verifier.verifyErrorFreeLog();
+		String projectBasedir = verifier.getBasedir();
 		assertNumberOfSuccessfulTests(projectBasedir, "bundle.test.JUnit59Test", 4);
 	}
 }

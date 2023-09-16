@@ -34,6 +34,7 @@ public class JUnit59Provider extends AbstractJUnitProvider {
 
     private static final Version VERSION = Version.parseVersion("5.9.0");
     private boolean withVintage;
+    private boolean withSuite;
 
     @Override
     protected Set<String> getJUnitBundleNames() {
@@ -57,6 +58,9 @@ public class JUnit59Provider extends AbstractJUnitProvider {
         if (withVintage) {
             requiredBundles.add(newDependency("org.eclipse.tycho", "org.eclipse.tycho.surefire.junit59withvintage"));
         }
+        if (withSuite) {
+            requiredBundles.add(newDependency("org.eclipse.tycho", "org.eclipse.tycho.surefire.junit59withsuite"));
+        }
         return Collections.unmodifiableList(requiredBundles);
     }
 
@@ -68,6 +72,10 @@ public class JUnit59Provider extends AbstractJUnitProvider {
     @Override
     public boolean isEnabled(MavenProject project, List<ClasspathEntry> testBundleClassPath, Properties surefireProperties) {
         withVintage = new JUnit47Provider().containsJunitInClasspath(testBundleClassPath);
+        // Note: The platform version is different from the runner version
+        withSuite = testBundleClassPath.stream() //
+                .filter(entry -> "junit-platform-suite-api".equals(entry.getArtifactKey().getId())) //
+                .count() > 0;
         return super.isEnabled(project, testBundleClassPath, surefireProperties);
     }
 }
