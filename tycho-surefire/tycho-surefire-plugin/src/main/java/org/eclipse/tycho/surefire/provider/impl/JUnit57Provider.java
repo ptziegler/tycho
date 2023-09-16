@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 SAP SE and others.
+ * Copyright (c) 2018, 2023 SAP SE and others.
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -13,9 +13,10 @@
 
 package org.eclipse.tycho.surefire.provider.impl;
 
-import static java.util.Collections.singletonList;
 import static org.eclipse.tycho.surefire.provider.impl.ProviderHelper.newDependency;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.osgi.framework.VersionRange;
 public class JUnit57Provider extends AbstractJUnitProvider {
 
     private static final Version VERSION = Version.parseVersion("5.7.0");
+    private boolean withVintage;
 
     @Override
     protected Set<String> getJUnitBundleNames() {
@@ -50,7 +52,12 @@ public class JUnit57Provider extends AbstractJUnitProvider {
 
     @Override
     public List<Dependency> getRequiredBundles() {
-        return singletonList(newDependency("org.eclipse.tycho", "org.eclipse.tycho.surefire.junit57"));
+        List<Dependency> requiredBundles = new ArrayList<>();
+        requiredBundles.add(newDependency("org.eclipse.tycho", "org.eclipse.tycho.surefire.junit57"));
+        if (withVintage) {
+            requiredBundles.add(newDependency("org.eclipse.tycho", "org.eclipse.tycho.surefire.junit57withvintage"));
+        }
+        return Collections.unmodifiableList(requiredBundles);
     }
 
     @Override
@@ -59,8 +66,9 @@ public class JUnit57Provider extends AbstractJUnitProvider {
     }
 
     @Override
-    public boolean isEnabled(MavenProject project, List<ClasspathEntry> testBundleClassPath, Properties surefireProperties) {
-        return super.isEnabled(project, testBundleClassPath, surefireProperties)
-                && !new JUnit47Provider().containsJunitInClasspath(testBundleClassPath);
+    public boolean isEnabled(MavenProject project, List<ClasspathEntry> testBundleClassPath,
+            Properties surefireProperties) {
+        withVintage = new JUnit47Provider().containsJunitInClasspath(testBundleClassPath);
+        return super.isEnabled(project, testBundleClassPath, surefireProperties);
     }
 }
